@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Heart, Send, Download, X, User as UserIcon } from 'lucide-react';
+import { Heart, Send, Download, X, User as UserIcon, Star } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Lightbox = ({ mediaId, onClose, onActionSuccess }) => {
@@ -8,6 +8,7 @@ const Lightbox = ({ mediaId, onClose, onActionSuccess }) => {
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState('');
   const [liked, setLiked] = useState(false);
+  const [favourited, setFavourited] = useState(user?.favourites?.includes(mediaId) || false);
   const [showTagInput, setShowTagInput] = useState(false);
   const [tagInputCoords, setTagInputCoords] = useState({ x: 50, y: 50 });
   const [newTagName, setNewTagName] = useState('');
@@ -58,7 +59,21 @@ const Lightbox = ({ mediaId, onClose, onActionSuccess }) => {
       console.error('Error liking media:', err);
     }
   };
-
+  const handleFavourite = async () => {
+    try {
+      const res = await fetch(`/api/media/${mediaId}/favourite`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const result = await res.json();
+      if (result.success) {
+        setFavourited(result.isFavourite);
+        if (onActionSuccess) onActionSuccess();
+      }
+    } catch (err) {
+      console.error('Error toggling favourite:', err);
+    }
+  };
   const handleComment = async (e) => {
     e.preventDefault();
     if (!commentText.trim()) return;
@@ -262,18 +277,26 @@ const Lightbox = ({ mediaId, onClose, onActionSuccess }) => {
             </div>
           </div>
 
-          <div className="flex gap-3 mb-5">
+          <div className="flex gap-2.5 mb-5">
             <button 
-              className={`flex-1 flex items-center justify-center gap-2 p-2.5 bg-white/3 border border-white/6 rounded text-xs font-semibold text-text-secondary cursor-pointer hover:bg-white/8 hover:text-text-primary transition-all duration-200 ${liked ? 'text-accent! bg-accent/5! border-accent/30!' : ''}`} 
+              className={`flex-1 flex items-center justify-center gap-1.5 p-2 bg-white/3 border border-white/6 rounded text-xs font-semibold text-text-secondary cursor-pointer hover:bg-white/8 hover:text-text-primary transition-all duration-200 ${liked ? 'text-accent! bg-accent/5! border-accent/30!' : ''}`} 
               onClick={handleLike}
             >
-              <Heart size={18} fill={liked ? 'currentColor' : 'none'} />
+              <Heart size={16} fill={liked ? 'currentColor' : 'none'} />
               <span>{media.likes?.length || 0} Likes</span>
             </button>
+
+            <button 
+              className={`flex-1 flex items-center justify-center gap-1.5 p-2 bg-white/3 border border-white/6 rounded text-xs font-semibold text-text-secondary cursor-pointer hover:bg-white/8 hover:text-text-primary transition-all duration-200 ${favourited ? 'text-warning! bg-warning/5! border-warning/30!' : ''}`} 
+              onClick={handleFavourite}
+            >
+              <Star size={16} fill={favourited ? 'currentColor' : 'none'} />
+              <span>Fav</span>
+            </button>
             
-            <button className="flex-1 flex items-center justify-center gap-2 p-2.5 bg-primary/5 border border-primary/30 rounded text-xs font-semibold text-primary cursor-pointer hover:bg-primary hover:text-white transition-all duration-200" onClick={handleDownload}>
-              <Download size={18} />
-              <span>Download</span>
+            <button className="flex-1 flex items-center justify-center gap-1.5 p-2 bg-primary/5 border border-primary/30 rounded text-xs font-semibold text-primary cursor-pointer hover:bg-primary hover:text-white transition-all duration-200" onClick={handleDownload}>
+              <Download size={16} />
+              <span>Get</span>
             </button>
           </div>
 

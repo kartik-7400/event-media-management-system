@@ -492,4 +492,71 @@ router.get('/:id/download', protect, async (req, res) => {
   }
 });
 
+// @desc    Toggle media in user's favourites list
+// @route   POST /api/media/:id/favourite
+// @access  Private
+router.post('/:id/favourite', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const mediaId = req.params.id;
+
+    const favIdx = user.favourites.indexOf(mediaId);
+    let isFavourite = false;
+
+    if (favIdx > -1) {
+      user.favourites.splice(favIdx, 1);
+    } else {
+      user.favourites.push(mediaId);
+      isFavourite = true;
+    }
+
+    await user.save();
+    res.json({ success: true, isFavourite, favouritesCount: user.favourites.length });
+  } catch (error) {
+    console.error('Error toggling favourite:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// @desc    Get all favourite media for user
+// @route   GET /api/media/favourites/list
+// @access  Private
+router.get('/favourites/list', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate({
+      path: 'favourites',
+      populate: [
+        { path: 'event', select: 'title date clubName' },
+        { path: 'uploadedBy', select: 'name email role' }
+      ]
+    });
+
+    res.json({ success: true, count: user.favourites.length, data: user.favourites });
+  } catch (error) {
+    console.error('Error fetching favourite media list:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// @desc    Get detailed media by id
+// @route   GET /api/media/:id
+// @access  Private
+router.get('/:id', protect, async (req, res) => {
+  try {
+    const media = await Media.findById(req.params.id)
+      .populate('uploadedBy', 'name email role')
+      .populate('faceMatches', 'name email profilePicture')
+      .populate('event', 'title clubName');
+
+    if (!media) {
+      return res.status(404).json({ success: false, message: 'Media not found' });
+    }
+
+    res.json({ success: true, data: media });
+  } catch (error) {
+    console.error('Error fetching media details:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 export default router;
