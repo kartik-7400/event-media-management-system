@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload, X, CheckCircle, AlertCircle, Film } from 'lucide-react';
+import { Upload, X, CheckCircle, AlertCircle, Film, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const FileDropzone = ({ eventId, onUploadSuccess }) => {
@@ -8,14 +8,22 @@ const FileDropzone = ({ eventId, onUploadSuccess }) => {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState({}); // format: { [fileId]: percentage }
   const [status, setStatus] = useState({}); // format: { [fileId]: 'pending' | 'uploading' | 'processing' | 'done' | 'error' }
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleDragOver = (e) => {
     e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
+    setIsDragging(false);
     const files = Array.from(e.dataTransfer.files);
     addFiles(files);
   };
@@ -167,11 +175,17 @@ const FileDropzone = ({ eventId, onUploadSuccess }) => {
     }
   };
 
+  const hasPendingFiles = selectedFiles.some(f => status[f.id] === 'pending' || status[f.id] === 'error');
+
   return (
-    <div className="bg-bg-secondary border border-white/5 rounded-md p-6 mb-6">
+    <div className="bg-bg-secondary border border-border-color rounded-md p-6">
       <div 
-        className={`group border-2 border-dashed border-primary/30 rounded-md p-10 text-center cursor-pointer bg-white/[0.01] hover:border-primary hover:bg-primary/5 hover:shadow-[0_0_20px_rgba(99,102,241,0.08)] transition-all duration-300 flex flex-col items-center justify-center ${uploading ? 'opacity-50 cursor-not-allowed border-white/10' : ''}`}
+        className={`border-2 border-dashed rounded-md p-10 text-center cursor-pointer flex flex-col items-center justify-center transition-all duration-300
+          ${uploading ? 'opacity-50 cursor-not-allowed border-border-color' : ''}
+          ${isDragging ? 'border-primary bg-primary-muted' : 'border-border-hover hover:border-primary hover:bg-primary-muted/50'}
+        `}
         onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={() => !uploading && fileInputRef.current.click()}
       >
@@ -184,26 +198,35 @@ const FileDropzone = ({ eventId, onUploadSuccess }) => {
           onChange={handleFileSelect}
           disabled={uploading}
         />
-        <Upload className="text-text-secondary mb-4 group-hover:text-primary group-hover:-translate-y-1 transition-all duration-200" size={48} />
-        <h3 className="text-lg font-bold text-text-primary mb-2">Drag & Drop photos/videos here</h3>
-        <p className="text-sm text-text-secondary mb-4">or click to browse files from your device</p>
+        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 transition-all duration-200 ${isDragging ? 'bg-primary/20 text-primary' : 'bg-bg-tertiary text-text-secondary'}`}>
+          <Upload size={24} />
+        </div>
+        <h3 className="text-base font-bold text-text-primary mb-1">Drag & drop photos or videos here</h3>
+        <p className="text-sm text-text-secondary mb-3">or click to browse files from your device</p>
         <span className="text-xs text-text-muted">Supports bulk uploads of images and MP4 videos</span>
       </div>
 
       {selectedFiles.length > 0 && (
-        <div className="mt-8 border-t border-white/5 pt-6">
-          <div className="flex justify-between items-center mb-5">
-            <h4 className="text-[15px] font-bold text-text-primary">Files Selected ({selectedFiles.length})</h4>
+        <div className="mt-6 border-t border-border-color pt-6">
+          <div className="flex justify-between items-center mb-4">
+            <h4 className="text-sm font-bold text-text-primary">Files Selected ({selectedFiles.length})</h4>
             <button 
               className="btn btn-primary btn-sm" 
               onClick={handleUploadAll}
-              disabled={uploading || !selectedFiles.some(f => status[f.id] === 'pending' || status[f.id] === 'error')}
+              disabled={uploading || !hasPendingFiles}
             >
-              {uploading ? 'Uploading...' : 'Upload All'}
+              {uploading ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                'Upload All'
+              )}
             </button>
           </div>
           
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-4 max-h-[400px] overflow-y-auto pr-2">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-4 max-h-[400px] overflow-y-auto pr-1">
             {selectedFiles.map((fileObj, index) => {
               const fileId = fileObj.id;
               const fileStatus = status[fileId];
@@ -211,10 +234,10 @@ const FileDropzone = ({ eventId, onUploadSuccess }) => {
               const isVideo = fileObj.type.startsWith('video/');
 
               return (
-                <div key={fileId} className="relative flex flex-col bg-bg-tertiary border border-white/[0.06] rounded p-2">
+                <div key={fileId} className="relative flex flex-col bg-bg-tertiary border border-border-color rounded-md p-2">
                   <div className="relative w-full aspect-[4/3] rounded overflow-hidden bg-black flex items-center justify-center">
                     {isVideo ? (
-                      <div className="w-full height-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center text-white">
+                      <div className="w-full h-full bg-bg-elevated flex items-center justify-center text-text-muted">
                         <Film size={24} />
                       </div>
                     ) : (
@@ -223,46 +246,52 @@ const FileDropzone = ({ eventId, onUploadSuccess }) => {
                     
                     {!uploading && (
                       <button 
-                        className="absolute top-1.5 right-1.5 bg-black/60 text-white rounded-full w-5 h-5 flex items-center justify-center cursor-pointer hover:bg-error hover:scale-105 transition-all duration-200" 
-                        onClick={() => removeFile(fileId, index)}
+                        className="absolute top-1.5 right-1.5 bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer hover:bg-error transition-all duration-200 border-none" 
+                        onClick={(e) => { e.stopPropagation(); removeFile(fileId, index); }}
                       >
                         <X size={12} />
                       </button>
                     )}
                   </div>
                   
-                  <div className="flex flex-col mt-2.5 gap-1.5">
+                  <div className="flex flex-col mt-2 gap-1.5">
                     <span className="text-xs font-semibold text-text-primary truncate" title={fileObj.name}>
                       {fileObj.name}
                     </span>
                     
                     {fileStatus === 'uploading' && (
                       <div className="flex items-center gap-2 mt-1">
-                        <div className="flex-1 bg-white/5 h-1 rounded-full overflow-hidden">
-                          <div className="bg-gradient-to-r from-primary to-accent h-full transition-all duration-150" style={{ width: `${fileProgress}%` }}></div>
+                        <div className="flex-1 bg-bg-elevated h-1.5 rounded-full overflow-hidden">
+                          <div 
+                            className="bg-primary h-full rounded-full transition-all duration-150" 
+                            style={{ width: `${fileProgress}%` }}
+                          />
                         </div>
-                        <span className="text-[10px] text-text-secondary font-bold">{fileProgress}%</span>
+                        <span className="text-[10px] text-text-secondary font-bold min-w-[28px] text-right">{fileProgress}%</span>
                       </div>
                     )}
 
                     {fileStatus === 'processing' && (
-                      <div className="text-[10px] text-warning font-semibold animate-pulse">Processing AI & Watermark...</div>
+                      <div className="flex items-center gap-1.5 text-[11px] text-warning font-semibold">
+                        <Loader2 size={12} className="animate-spin" />
+                        Processing AI...
+                      </div>
                     )}
 
                     {fileStatus === 'done' && (
-                      <div className="inline-flex items-center gap-1 text-[10px] text-success font-bold">
+                      <div className="flex items-center gap-1.5 text-[11px] text-success font-bold">
                         <CheckCircle size={12} /> Uploaded
                       </div>
                     )}
 
                     {fileStatus === 'error' && (
-                      <div className="inline-flex items-center gap-1 text-[10px] text-error font-bold">
+                      <div className="flex items-center gap-1.5 text-[11px] text-error font-bold">
                         <AlertCircle size={12} /> Error
                       </div>
                     )}
 
                     {fileStatus === 'pending' && (
-                      <div className="inline-flex items-center gap-1 text-[10px] text-text-muted font-bold">Ready</div>
+                      <div className="text-[11px] text-text-muted font-medium">Ready</div>
                     )}
                   </div>
                 </div>

@@ -1,8 +1,8 @@
+import './config/env.js';
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 
 // Route imports
@@ -10,8 +10,6 @@ import authRoutes from './routes/auth.js';
 import eventRoutes from './routes/events.js';
 import mediaRoutes from './routes/media.js';
 import notificationRoutes from './routes/notifications.js';
-
-dotenv.config();
 
 // Connect to Database
 connectDB();
@@ -22,8 +20,8 @@ const server = http.createServer(app);
 // Configure Socket.io
 const io = new Server(server, {
   cors: {
-    origin: '*', // Allow all origins for dev simplicity
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   }
 });
 

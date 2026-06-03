@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Calendar, MapPin, User, Shield, Film, Plus, Search, SlidersHorizontal, Check } from 'lucide-react';
+import { Calendar, MapPin, Plus, Search, SlidersHorizontal, Check, Loader2, FolderOpen } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Modal from '../components/Modal';
+import Dropdown from '../components/Dropdown';
+import DatePicker from '../components/DatePicker';
 
 const Dashboard = () => {
   const { user, token } = useAuth();
@@ -123,10 +125,10 @@ const Dashboard = () => {
       {/* Header section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold font-heading text-text-primary">
+          <h1 className="text-2xl font-extrabold text-text-primary" style={{ letterSpacing: '-0.02em' }}>
             Hello, <span className="gradient-text">{user.name}</span>
           </h1>
-          <p className="text-sm text-text-secondary">
+          <p className="text-sm text-text-secondary mt-1">
             {user.role === 'Admin' ? `Admin Dashboard for ${user.clubName}` : `Welcome to your EventMediaHub feed`}
           </p>
         </div>
@@ -145,7 +147,7 @@ const Dashboard = () => {
       </div>
 
       {/* Control panel: Search, Sorting, Filtering */}
-      <div className="glass-card mb-8 p-5 flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div className="glass-card mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
         {/* Search */}
         <div className="relative w-full md:w-[320px]">
           <input 
@@ -162,47 +164,69 @@ const Dashboard = () => {
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
           <div className="flex items-center gap-2">
             <SlidersHorizontal size={14} className="text-text-muted" />
-            <select 
+            <Dropdown
               value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="form-control py-2 text-xs w-[130px]"
-            >
-              <option value="">All Categories</option>
-              <option value="Sports">Sports</option>
-              <option value="Graduation">Graduation</option>
-              <option value="Party">Party</option>
-              <option value="Wedding">Wedding</option>
-              <option value="Conference">Conference</option>
-              <option value="Other">Other</option>
-            </select>
+              onChange={setCategoryFilter}
+              size="sm"
+              width="w-[140px]"
+              placeholder="All Categories"
+              options={[
+                { value: '', label: 'All Categories' },
+                { value: 'Sports', label: 'Sports' },
+                { value: 'Graduation', label: 'Graduation' },
+                { value: 'Party', label: 'Party' },
+                { value: 'Wedding', label: 'Wedding' },
+                { value: 'Conference', label: 'Conference' },
+                { value: 'Other', label: 'Other' },
+              ]}
+            />
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs text-text-muted">Sort:</span>
-            <select 
+            <span className="text-xs text-text-muted font-medium">Sort:</span>
+            <Dropdown
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="form-control py-2 text-xs w-[110px]"
-            >
-              <option value="date">Date</option>
-              <option value="title">Event Name</option>
-              <option value="category">Category</option>
-            </select>
-            <select 
+              onChange={setSortBy}
+              size="sm"
+              width="w-[120px]"
+              options={[
+                { value: 'date', label: 'Date' },
+                { value: 'title', label: 'Event Name' },
+                { value: 'category', label: 'Category' },
+              ]}
+            />
+            <Dropdown
               value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value)}
-              className="form-control py-2 text-xs w-[90px]"
-            >
-              <option value="desc">Desc</option>
-              <option value="asc">Asc</option>
-            </select>
+              onChange={setSortOrder}
+              size="sm"
+              width="w-[90px]"
+              options={[
+                { value: 'desc', label: 'Desc' },
+                { value: 'asc', label: 'Asc' },
+              ]}
+            />
           </div>
         </div>
       </div>
 
       {/* Events Grid */}
       {loading ? (
-        <div className="text-center py-20 text-text-muted animate-pulse">Loading events feed...</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="glass-card">
+              <div className="skeleton h-4 w-20 mb-4"></div>
+              <div className="skeleton h-6 w-3/4 mb-3"></div>
+              <div className="skeleton h-3 w-full mb-2"></div>
+              <div className="skeleton h-3 w-2/3 mb-6"></div>
+              <div className="skeleton h-3 w-1/2 mb-2"></div>
+              <div className="skeleton h-3 w-1/3 mb-6"></div>
+              <div className="flex gap-3 pt-4 border-t border-border-color">
+                <div className="skeleton h-9 flex-1"></div>
+                <div className="skeleton h-9 flex-1"></div>
+              </div>
+            </div>
+          ))}
+        </div>
       ) : events.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {events.map((event, index) => {
@@ -212,36 +236,41 @@ const Dashboard = () => {
             return (
               <div key={event._id} className="glass-card hover:glass-card-hover flex flex-col justify-between h-full">
                 <div>
+                  {/* Category + Club */}
                   <div className="flex justify-between items-start mb-4">
-                    <span className="text-[10px] font-extrabold px-2.5 py-1 rounded bg-primary/10 border border-primary/20 text-primary uppercase tracking-wider">
+                    <span className="badge badge-primary">
                       {event.category}
                     </span>
-                    <span className="text-xs text-text-muted font-semibold">{event.clubName}</span>
+                    <span className="text-xs text-text-muted font-medium">{event.clubName}</span>
                   </div>
 
-                  <h3 className="text-xl font-bold text-text-primary mb-3">
-                    <Link to={`/event/${event._id}`} className="hover:text-primary transition-all duration-200">
+                  {/* Title */}
+                  <h3 className="text-lg font-bold text-text-primary mb-2">
+                    <Link to={`/event/${event._id}`} className="hover:text-primary transition-colors duration-200">
                       {event.title}
                     </Link>
                   </h3>
                   
-                  <p className="text-xs text-text-secondary line-clamp-3 mb-6">
+                  {/* Description */}
+                  <p className="text-sm text-text-secondary line-clamp-3 mb-4 leading-relaxed">
                     {event.description}
                   </p>
 
-                  <div className="flex flex-col gap-2.5 text-xs text-text-secondary mb-6 border-t border-white/5 pt-4">
+                  {/* Metadata */}
+                  <div className="flex flex-col gap-2 text-xs text-text-secondary border-t border-border-color pt-4">
                     <div className="flex items-center gap-2">
                       <Calendar size={14} className="text-primary" />
                       <span>{new Date(event.date).toLocaleDateString(undefined, { dateStyle: 'medium' })}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <MapPin size={14} className="text-accent" />
+                      <MapPin size={14} className="text-warning" />
                       <span>{event.location}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-3 border-t border-white/5 pt-4 mt-auto">
+                {/* Action Footer */}
+                <div className="flex gap-3 border-t border-border-color pt-4 mt-4">
                   <Link to={`/event/${event._id}`} className="btn btn-secondary flex-1 text-xs py-2.5">
                     View Album
                   </Link>
@@ -256,7 +285,7 @@ const Dashboard = () => {
                   )}
 
                   {user.role === 'Club Member' && hasJoined && (
-                    <div className="inline-flex items-center justify-center gap-1 flex-1 bg-success/10 border border-success/30 text-success text-xs font-semibold rounded px-4 py-2">
+                    <div className="inline-flex items-center justify-center gap-1.5 flex-1 bg-success-muted border border-success/15 text-success text-xs font-semibold rounded-md px-4 py-2.5">
                       <Check size={14} /> Attended
                     </div>
                   )}
@@ -266,8 +295,10 @@ const Dashboard = () => {
           })}
         </div>
       ) : (
-        <div className="text-center py-24 glass-card">
-          <p className="text-text-secondary text-sm">No events found matching current criteria.</p>
+        <div className="text-center py-20 glass-card flex flex-col items-center">
+          <FolderOpen size={48} className="text-text-muted mb-4" />
+          <p className="text-text-secondary text-sm font-medium">No events found matching current criteria.</p>
+          <p className="text-text-muted text-xs mt-1">Try adjusting your filters or search query.</p>
         </div>
       )}
 
@@ -278,14 +309,15 @@ const Dashboard = () => {
         title="Create New Event"
       >
         {formError && (
-          <div className="mb-4 p-3 rounded bg-error/10 border border-error/20 text-error text-xs font-bold text-center">
+          <div className="mb-4 p-3 rounded-md bg-error-muted border border-error/15 text-error text-xs font-bold text-center">
             {formError}
           </div>
         )}
         <form onSubmit={handleCreateEvent}>
           <div className="form-group">
-            <label>Event Title</label>
+            <label htmlFor="event-title">Event Title</label>
             <input 
+              id="event-title"
               type="text" 
               className="form-control"
               placeholder="Graduation Ceremony 2026"
@@ -296,8 +328,9 @@ const Dashboard = () => {
           </div>
 
           <div className="form-group">
-            <label>Description</label>
+            <label htmlFor="event-desc">Description</label>
             <textarea 
+              id="event-desc"
               className="form-control"
               rows={3}
               placeholder="Details about the event uploads and photographer guidelines..."
@@ -310,34 +343,33 @@ const Dashboard = () => {
           <div className="grid grid-cols-2 gap-4">
             <div className="form-group">
               <label>Date</label>
-              <input 
-                type="date" 
-                className="form-control"
+              <DatePicker
                 value={newEvent.date}
-                onChange={(e) => setNewEvent(prev => ({ ...prev, date: e.target.value }))}
-                required
+                onChange={(val) => setNewEvent(prev => ({ ...prev, date: val }))}
+                placeholder="Pick event date"
               />
             </div>
             <div className="form-group">
               <label>Category</label>
-              <select 
-                className="form-control"
+              <Dropdown
                 value={newEvent.category}
-                onChange={(e) => setNewEvent(prev => ({ ...prev, category: e.target.value }))}
-              >
-                <option value="Sports">Sports</option>
-                <option value="Graduation">Graduation</option>
-                <option value="Party">Party</option>
-                <option value="Wedding">Wedding</option>
-                <option value="Conference">Conference</option>
-                <option value="Other">Other</option>
-              </select>
+                onChange={(val) => setNewEvent(prev => ({ ...prev, category: val }))}
+                options={[
+                  { value: 'Sports', label: 'Sports' },
+                  { value: 'Graduation', label: 'Graduation' },
+                  { value: 'Party', label: 'Party' },
+                  { value: 'Wedding', label: 'Wedding' },
+                  { value: 'Conference', label: 'Conference' },
+                  { value: 'Other', label: 'Other' },
+                ]}
+              />
             </div>
           </div>
 
           <div className="form-group">
-            <label>Location</label>
+            <label htmlFor="event-location">Location</label>
             <input 
+              id="event-location"
               type="text" 
               className="form-control"
               placeholder="Campus Auditorium"
@@ -348,8 +380,9 @@ const Dashboard = () => {
           </div>
 
           <div className="form-group">
-            <label>Club Host</label>
+            <label htmlFor="event-club">Club Host</label>
             <input 
+              id="event-club"
               type="text" 
               className="form-control"
               value={newEvent.clubName}
@@ -360,10 +393,17 @@ const Dashboard = () => {
 
           <button 
             type="submit" 
-            className="btn btn-primary w-full mt-4"
+            className="btn btn-primary w-full mt-2"
             disabled={formSubmitting}
           >
-            {formSubmitting ? 'Creating Event...' : 'Create Event'}
+            {formSubmitting ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Creating Event...
+              </>
+            ) : (
+              'Create Event'
+            )}
           </button>
         </form>
       </Modal>

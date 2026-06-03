@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 
@@ -17,18 +17,19 @@ import Profile from './pages/Profile';
 import Navbar from './components/Navbar';
 import Lightbox from './components/Lightbox';
 
-const themes = {
-  indigo: { primary: '#6366f1', primaryHover: '#4f46e5', accent: '#d946ef', accentHover: '#c026d3' },
-  emerald: { primary: '#10b981', primaryHover: '#059669', accent: '#3b82f6', accentHover: '#2563eb' },
-  crimson: { primary: '#f43f5e', primaryHover: '#e11d48', accent: '#f59e0b', accentHover: '#d97706' }
-};
-
 // Route protector wrapper
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
   
   if (loading) {
-    return <div className="text-center py-20 text-text-secondary animate-pulse">Checking credentials...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-sm text-text-muted font-medium">Checking credentials...</span>
+        </div>
+      </div>
+    );
   }
   
   return user ? children : <Navigate to="/login" />;
@@ -37,16 +38,6 @@ const PrivateRoute = ({ children }) => {
 const AppContent = () => {
   const { user } = useAuth();
   const [globalMediaId, setGlobalMediaId] = useState(null);
-
-  // Initialize theme on startup
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'indigo';
-    const selected = themes[savedTheme] || themes.indigo;
-    document.documentElement.style.setProperty('--color-primary-val', selected.primary);
-    document.documentElement.style.setProperty('--color-primary-hover-val', selected.primaryHover);
-    document.documentElement.style.setProperty('--color-accent-val', selected.accent);
-    document.documentElement.style.setProperty('--color-accent-hover-val', selected.accentHover);
-  }, []);
 
   return (
     <div className="flex flex-col min-h-screen">

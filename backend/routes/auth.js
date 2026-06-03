@@ -8,11 +8,10 @@ import { protect } from '../middleware/auth.js';
 import { getUploadPresignedUrl, indexFaceSelfie, IS_MOCK, s3Client, BUCKET_NAME } from '../utils/awsHelper.js';
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-super-secret-jwt-key';
-
 // Helper to sign JWT
 const generateToken = (id) => {
-  return jwt.sign({ id }, JWT_SECRET, { expiresIn: '30d' });
+  const secret = process.env.JWT_SECRET || 'fallback-super-secret-jwt-key';
+  return jwt.sign({ id }, secret, { expiresIn: '30d' });
 };
 
 // @desc    Register a new user
@@ -22,7 +21,7 @@ router.post('/register', async (req, res) => {
   const { name, email, password, role, clubName } = req.body;
 
   try {
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ email: email.toLowerCase() });
     if (userExists) {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }
@@ -63,7 +62,7 @@ router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (user && (await user.matchPassword(password))) {
       res.json({
         success: true,
@@ -167,7 +166,7 @@ router.post('/confirm-selfie', protect, async (req, res) => {
 
     // Save S3 key/url and FaceId to database
     const profilePictureUrl = IS_MOCK 
-      ? `http://localhost:5001/api/media/mock-files/${key}`
+      ? `/api/media/mock-files/${key}`
       : `https://${BUCKET_NAME}.s3.amazonaws.com/${key}`;
 
     const updatedUser = await User.findByIdAndUpdate(

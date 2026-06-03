@@ -7,7 +7,8 @@ import {
   CreateCollectionCommand,
   DescribeCollectionCommand
 } from '@aws-sdk/client-rekognition';
-import { s3Client, rekognitionClient, BUCKET_NAME, REKOGNITION_COLLECTION_ID, IS_MOCK } from '../config/aws.js';
+import { s3Client, rekognitionClient, BUCKET_NAME, REKOGNITION_COLLECTION_ID, IS_MOCK, setMockMode } from '../config/aws.js';
+export { s3Client, rekognitionClient, BUCKET_NAME, REKOGNITION_COLLECTION_ID, IS_MOCK };
 import fs from 'fs';
 import path from 'path';
 
@@ -27,6 +28,18 @@ if (!IS_MOCK) {
         }
       } else {
         console.error('AWS Rekognition: Error checking Face Collection', err);
+        if (
+          err.code === 'ENOTFOUND' ||
+          err.code === 'EAI_AGAIN' ||
+          err.name === 'TimeoutError' ||
+          err.name === 'ConnectTimeoutError' ||
+          err.message?.includes('getaddrinfo') ||
+          err.message?.includes('ENOTFOUND') ||
+          err.message?.includes('fetch failed')
+        ) {
+          console.warn('⚠️ AWS services are unreachable. Automatically falling back to simulated AWS MOCK mode.');
+          setMockMode(true);
+        }
       }
     }
   })();
@@ -45,7 +58,7 @@ export const getUploadPresignedUrl = async (key, contentType) => {
   if (IS_MOCK) {
     // Return mock endpoint path. The client will POST form-data to this endpoint.
     return {
-      url: `http://localhost:5001/api/media/mock-upload`,
+      url: `/api/media/mock-upload`,
       key,
       isMock: true,
       fields: { key, 'Content-Type': contentType }
@@ -68,7 +81,7 @@ export const getUploadPresignedUrl = async (key, contentType) => {
 export const getDownloadPresignedUrl = async (key) => {
   if (IS_MOCK) {
     // Return local mock static path
-    return `http://localhost:5001/api/media/mock-files/${key}`;
+    return `/api/media/mock-files/${key}`;
   }
 
   const command = new GetObjectCommand({

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Camera, CheckCircle2, Loader2 } from 'lucide-react';
+import Dropdown from '../components/Dropdown';
 
 const Register = () => {
   const { register, uploadSelfie } = useAuth();
@@ -96,23 +97,24 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-100px)] flex justify-center items-center px-6">
+    <div className="min-h-[calc(100vh-60px)] flex justify-center items-center px-6 py-8">
       {step === 1 ? (
         // STEP 1: Registration Form
-        <div className="w-full max-w-[480px] glass-card p-10 animate-fade-in-up">
-          <h2 className="text-3xl font-extrabold font-heading text-center mb-2">Create Account</h2>
+        <div className="w-full max-w-[480px] glass-card animate-fade-in-up">
+          <h2 className="text-2xl font-extrabold text-center mb-1" style={{ letterSpacing: '-0.02em' }}>Create Account</h2>
           <p className="text-sm text-text-secondary text-center mb-8">Join the centralized event media hub</p>
 
           {error && (
-            <div className="mb-5 p-3.5 rounded bg-error/10 border border-error/20 text-error text-sm font-semibold text-center">
+            <div className="mb-5 p-3 rounded-md bg-error-muted border border-error/15 text-error text-sm font-semibold text-center">
               {error}
             </div>
           )}
 
           <form onSubmit={handleFormSubmit}>
             <div className="form-group">
-              <label>Full Name</label>
+              <label htmlFor="reg-name">Full Name</label>
               <input 
+                id="reg-name"
                 type="text" 
                 name="name"
                 className="form-control" 
@@ -124,8 +126,9 @@ const Register = () => {
             </div>
 
             <div className="form-group">
-              <label>Email Address</label>
+              <label htmlFor="reg-email">Email Address</label>
               <input 
+                id="reg-email"
                 type="email" 
                 name="email"
                 className="form-control" 
@@ -137,8 +140,9 @@ const Register = () => {
             </div>
 
             <div className="form-group">
-              <label>Password</label>
+              <label htmlFor="reg-password">Password</label>
               <input 
+                id="reg-password"
                 type="password" 
                 name="password"
                 className="form-control" 
@@ -149,26 +153,26 @@ const Register = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-2 gap-4 mb-2">
               <div className="form-group">
                 <label>Select Role</label>
-                <select 
-                  name="role" 
-                  className="form-control" 
+                <Dropdown
                   value={formData.role}
-                  onChange={handleInputChange}
-                >
-                  <option value="Viewer">Viewer</option>
-                  <option value="Club Member">Club Member</option>
-                  <option value="Photographer">Photographer</option>
-                  <option value="Admin">Club Admin</option>
-                </select>
+                  onChange={(val) => setFormData(prev => ({ ...prev, role: val }))}
+                  options={[
+                    { value: 'Viewer', label: 'Viewer' },
+                    { value: 'Club Member', label: 'Club Member' },
+                    { value: 'Photographer', label: 'Photographer' },
+                    { value: 'Admin', label: 'Club Admin' },
+                  ]}
+                />
               </div>
 
               {(formData.role === 'Admin' || formData.role === 'Club Member') && (
                 <div className="form-group">
-                  <label>Club Name</label>
+                  <label htmlFor="reg-club">Club Name</label>
                   <input 
+                    id="reg-club"
                     type="text" 
                     name="clubName"
                     className="form-control" 
@@ -183,10 +187,17 @@ const Register = () => {
 
             <button 
               type="submit" 
-              className="btn btn-primary w-full mt-4 py-3.5"
+              className="btn btn-primary w-full mt-2 py-3"
               disabled={submitting}
             >
-              {submitting ? 'Creating Account...' : 'Sign Up'}
+              {submitting ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Creating Account...
+                </>
+              ) : (
+                'Sign Up'
+              )}
             </button>
           </form>
 
@@ -199,14 +210,21 @@ const Register = () => {
         </div>
       ) : (
         // STEP 2: Selfie Wizard for Facial Recognition (Club Member Only)
-        <div className="w-full max-w-[480px] glass-card p-10 text-center animate-fade-in-up">
-          <h2 className="text-2xl font-extrabold font-heading mb-2">Register Your Face</h2>
+        <div className="w-full max-w-[480px] glass-card text-center animate-fade-in-up">
+          {/* Step Indicator */}
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <div className="w-8 h-8 rounded-full bg-success flex items-center justify-center text-white text-xs font-bold">1</div>
+            <div className="w-12 h-[2px] bg-success"></div>
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">2</div>
+          </div>
+
+          <h2 className="text-2xl font-extrabold mb-2" style={{ letterSpacing: '-0.02em' }}>Register Your Face</h2>
           <p className="text-sm text-text-secondary mb-8">
             Upload a reference selfie. Our AI system will scan event uploads to automatically find and link photos of you.
           </p>
 
           {error && (
-            <div className="mb-5 p-3.5 rounded bg-error/10 border border-error/20 text-error text-sm font-semibold text-center">
+            <div className="mb-5 p-3 rounded-md bg-error-muted border border-error/15 text-error text-sm font-semibold text-center">
               {error}
             </div>
           )}
@@ -214,14 +232,14 @@ const Register = () => {
           {!selfieRegistered ? (
             <div className="flex flex-col items-center">
               <div 
-                className="w-40 h-40 rounded-full border-2 border-dashed border-primary/30 flex items-center justify-center overflow-hidden mb-6 bg-white/[0.01] cursor-pointer hover:border-primary transition-all relative"
+                className="w-36 h-36 rounded-full border-2 border-dashed border-primary/30 flex items-center justify-center overflow-hidden mb-6 bg-bg-tertiary cursor-pointer hover:border-primary transition-all duration-200 relative"
                 onClick={() => document.getElementById('selfie-input').click()}
               >
                 {selfiePreview ? (
                   <img src={selfiePreview} alt="Selfie Preview" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="text-text-secondary flex flex-col items-center">
-                    <Camera size={36} className="mb-2" />
+                  <div className="text-text-muted flex flex-col items-center">
+                    <Camera size={32} className="mb-2" />
                     <span className="text-xs font-semibold">Select Selfie</span>
                   </div>
                 )}
@@ -235,7 +253,7 @@ const Register = () => {
                 onChange={handleSelfieChange}
               />
 
-              <div className="flex gap-4 w-full">
+              <div className="flex gap-3 w-full">
                 <button 
                   className="btn btn-primary flex-1 py-3" 
                   onClick={handleSelfieUpload}
@@ -261,12 +279,12 @@ const Register = () => {
             </div>
           ) : (
             <div className="flex flex-col items-center py-6">
-              <div className="w-16 h-16 rounded-full bg-success/20 border border-success/30 flex items-center justify-center text-success mb-6">
+              <div className="w-16 h-16 rounded-full bg-success-muted border border-success/20 flex items-center justify-center text-success mb-6">
                 <CheckCircle2 size={36} />
               </div>
               <h3 className="text-xl font-bold text-text-primary mb-2">Selfie Registered!</h3>
               <p className="text-sm text-text-secondary mb-8">
-                Your face has been successfully indexed in AWS Rekognition. You will be automatically tagged in photos.
+                Your face has been successfully indexed. You will be automatically tagged in event photos.
               </p>
               <button className="btn btn-primary w-full py-3" onClick={() => navigate('/dashboard')}>
                 Go to Dashboard

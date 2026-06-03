@@ -40,8 +40,8 @@ export const NotificationProvider = ({ children }) => {
       return;
     }
 
-    // Connect socket (Vite proxies to localhost:5001, but socket client needs to target port 5001 directly for websockets)
-    const newSocket = io('http://localhost:5001');
+    // Connect socket relative to current origin (Vite will proxy /socket.io to backend)
+    const newSocket = io();
     setSocket(newSocket);
 
     newSocket.on('connect', () => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Calendar, MapPin, Camera, UserPlus, Filter, Sparkles, Image as ImageIcon, Heart, MessageSquare } from 'lucide-react';
+import { Calendar, MapPin, Camera, UserPlus, Filter, Image as ImageIcon, Heart, MessageSquare, Sparkles, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import FileDropzone from '../components/FileDropzone';
 import Lightbox from '../components/Lightbox';
@@ -130,33 +130,53 @@ const EventDetails = () => {
   const isUploader = event?.invitedPhotographers?.some(p => p._id === user?._id) || event?.createdBy?._id === user?._id || user?.role === 'Admin';
 
   if (loading) {
-    return <div className="text-center py-20 text-text-muted animate-pulse">Loading event album...</div>;
+    return (
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="glass-card mb-8">
+          <div className="skeleton h-5 w-24 mb-4"></div>
+          <div className="skeleton h-8 w-2/3 mb-4"></div>
+          <div className="flex gap-4">
+            <div className="skeleton h-4 w-32"></div>
+            <div className="skeleton h-4 w-32"></div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {[1,2,3,4,5,6,7,8].map(i => (
+            <div key={i} className="skeleton aspect-[4/3] rounded-md"></div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (!event) {
     return (
       <div className="max-w-7xl mx-auto px-6 py-12 text-center">
-        <p className="text-error">Event not found.</p>
+        <p className="text-error text-sm font-medium">Event not found.</p>
         <Link to="/dashboard" className="btn btn-secondary mt-4">Back to Dashboard</Link>
       </div>
     );
   }
 
+  const scopeTabBase = "px-3.5 py-2 rounded-md text-xs font-semibold transition-all duration-200 cursor-pointer";
+  const scopeTabActive = `${scopeTabBase} bg-primary text-white`;
+  const scopeTabInactive = `${scopeTabBase} text-text-secondary hover:text-text-primary hover:bg-white/[0.04]`;
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
       {/* Event Header Banner */}
-      <div className="glass-card mb-8 p-8 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="glass-card mb-8 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/[0.03] rounded-full blur-3xl pointer-events-none"></div>
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 relative z-10">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-[10px] font-extrabold px-2.5 py-1 rounded bg-primary/10 border border-primary/20 text-primary uppercase tracking-wider">
+              <span className="badge badge-primary">
                 {event.category}
               </span>
-              <span className="text-xs text-text-secondary font-bold">Hosted by {event.clubName}</span>
+              <span className="text-xs text-text-muted font-medium">Hosted by {event.clubName}</span>
             </div>
             
-            <h1 className="text-3xl lg:text-4xl font-extrabold font-heading text-text-primary mb-4">{event.title}</h1>
+            <h1 className="text-2xl lg:text-3xl font-extrabold text-text-primary mb-4" style={{ letterSpacing: '-0.02em' }}>{event.title}</h1>
             
             <div className="flex flex-wrap gap-4 text-xs text-text-secondary">
               <div className="flex items-center gap-1.5">
@@ -164,7 +184,7 @@ const EventDetails = () => {
                 <span>{new Date(event.date).toLocaleDateString(undefined, { dateStyle: 'long' })}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <MapPin size={14} className="text-accent" />
+                <MapPin size={14} className="text-warning" />
                 <span>{event.location}</span>
               </div>
             </div>
@@ -183,7 +203,7 @@ const EventDetails = () => {
           </div>
         </div>
 
-        <p className="text-sm text-text-secondary mt-6 border-t border-white/5 pt-4 leading-relaxed">
+        <p className="text-sm text-text-secondary mt-6 border-t border-border-color pt-4 leading-relaxed">
           {event.description}
         </p>
 
@@ -194,7 +214,7 @@ const EventDetails = () => {
             <span className="font-semibold">Photographers:</span>
             <div className="flex gap-2">
               {event.invitedPhotographers.map(p => (
-                <span key={p._id} className="bg-white/5 px-2 py-0.5 rounded border border-white/5">{p.name}</span>
+                <span key={p._id} className="bg-bg-tertiary px-2.5 py-0.5 rounded-md border border-border-color text-text-secondary">{p.name}</span>
               ))}
             </div>
           </div>
@@ -204,8 +224,8 @@ const EventDetails = () => {
       {/* Media Upload system for photographers / hosts */}
       {isUploader && (
         <div className="mb-8">
-          <h2 className="text-xl font-bold font-heading text-text-primary mb-4 flex items-center gap-2">
-            <Camera size={20} className="text-primary" /> Add Media Files
+          <h2 className="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
+            <Camera size={18} className="text-primary" /> Add Media Files
           </h2>
           <FileDropzone eventId={event._id} onUploadSuccess={fetchEventMedia} />
         </div>
@@ -214,35 +234,37 @@ const EventDetails = () => {
       {/* Media Gallery Section */}
       <div>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <h2 className="text-xl font-bold font-heading text-text-primary flex items-center gap-2">
-            <ImageIcon size={20} className="text-accent" /> Event Album ({mediaList.length} items)
+          <h2 className="text-lg font-bold text-text-primary flex items-center gap-2">
+            <ImageIcon size={18} className="text-primary" /> Event Album ({mediaList.length} items)
           </h2>
 
-          {/* Scope Filters */}
-          <div className="flex items-center gap-2 bg-white/2 border border-white/5 p-1 rounded-md text-xs font-semibold">
+          {/* Scope Filters — grouped in container with active indicator */}
+          <div className="flex items-center gap-1 bg-bg-tertiary border border-border-color p-1 rounded-md">
             <button 
-              className={`px-3 py-1.5 rounded-sm transition-all ${scopeFilter === 'all' ? 'bg-primary text-white' : 'text-text-secondary hover:text-white'}`}
+              className={scopeFilter === 'all' ? scopeTabActive : scopeTabInactive}
               onClick={() => setScopeFilter('all')}
             >
               All
             </button>
             {user.role === 'Club Member' && (
               <button 
-                className={`px-3 py-1.5 rounded-sm transition-all flex items-center gap-1 ${scopeFilter === 'my-photos' ? 'bg-primary text-white' : 'text-text-secondary hover:text-white'}`}
+                className={scopeFilter === 'my-photos' ? scopeTabActive : scopeTabInactive}
                 onClick={() => setScopeFilter('my-photos')}
               >
-                <Sparkles size={12} /> My Photos
+                <span className="flex items-center gap-1">
+                  <Sparkles size={12} /> My Photos
+                </span>
               </button>
             )}
             <button 
-              className={`px-3 py-1.5 rounded-sm transition-all ${scopeFilter === 'public' ? 'bg-primary text-white' : 'text-text-secondary hover:text-white'}`}
+              className={scopeFilter === 'public' ? scopeTabActive : scopeTabInactive}
               onClick={() => setScopeFilter('public')}
             >
               Public
             </button>
             {isUploader && (
               <button 
-                className={`px-3 py-1.5 rounded-sm transition-all ${scopeFilter === 'private' ? 'bg-primary text-white' : 'text-text-secondary hover:text-white'}`}
+                className={scopeFilter === 'private' ? scopeTabActive : scopeTabInactive}
                 onClick={() => setScopeFilter('private')}
               >
                 Private
@@ -251,14 +273,14 @@ const EventDetails = () => {
           </div>
         </div>
 
-        {/* Unique label filter tags strip */}
+        {/* AI Tag filter strip */}
         {availableTags.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 mb-6 p-4 bg-bg-secondary/40 border border-white/5 rounded-md">
+          <div className="flex flex-wrap items-center gap-2 mb-6 p-4 bg-bg-tertiary/50 border border-border-color rounded-md">
             <span className="text-xs text-text-muted font-bold flex items-center gap-1">
               <Filter size={12} /> Filter by AI Tags:
             </span>
             <button 
-              className={`text-xs px-2.5 py-1 rounded-full border ${!searchTag ? 'bg-accent/10 border-accent text-accent' : 'bg-white/5 border-white/10 text-text-secondary hover:text-white'}`}
+              className={`text-xs px-3 py-1 rounded-full border transition-all duration-200 ${!searchTag ? 'bg-primary-muted border-primary/20 text-primary font-semibold' : 'bg-transparent border-border-color text-text-secondary hover:text-text-primary'}`}
               onClick={() => setSearchTag('')}
             >
               All
@@ -266,7 +288,7 @@ const EventDetails = () => {
             {availableTags.map(tag => (
               <button 
                 key={tag}
-                className={`text-xs px-2.5 py-1 rounded-full border ${searchTag === tag ? 'bg-accent/10 border-accent text-accent' : 'bg-white/5 border-white/10 text-text-secondary hover:text-white'}`}
+                className={`text-xs px-3 py-1 rounded-full border transition-all duration-200 ${searchTag === tag ? 'bg-primary-muted border-primary/20 text-primary font-semibold' : 'bg-transparent border-border-color text-text-secondary hover:text-text-primary'}`}
                 onClick={() => setSearchTag(tag)}
               >
                 #{tag}
@@ -287,20 +309,20 @@ const EventDetails = () => {
               return (
                 <div 
                   key={media._id}
-                  className="group relative aspect-[4/3] rounded-md overflow-hidden bg-black border border-white/5 cursor-pointer shadow-lg hover:border-primary/40 hover:scale-[1.02] hover:shadow-primary/5 transition-all duration-300"
+                  className="group relative aspect-[4/3] rounded-md overflow-hidden bg-black border border-border-color cursor-pointer hover:border-primary/30 hover:scale-[1.02] transition-all duration-300"
                   onClick={() => setActiveMediaId(media._id)}
                 >
                   {isVideo ? (
                     <video src={media.url} className="w-full h-full object-cover" />
                   ) : (
-                    <img src={media.url} alt="event-thumbnail" className="w-full h-full object-cover" />
+                    <img src={media.url} alt="Event media" className="w-full h-full object-cover" />
                   )}
 
-                  {/* Dark transparent overlay on hover */}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col justify-between p-4 transition-all duration-300">
+                  {/* Gradient overlay on hover — smooth from transparent to dark */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 flex flex-col justify-between p-4 transition-opacity duration-300">
                     <div className="flex justify-between items-start">
                       {!media.isPublic && (
-                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-accent/20 border border-accent/40 text-accent rounded">
+                        <span className="badge badge-warning text-[9px]">
                           Private
                         </span>
                       )}
@@ -308,7 +330,7 @@ const EventDetails = () => {
 
                     <div className="flex justify-between items-center text-white text-xs font-semibold">
                       <div className="flex gap-3">
-                        <span className={`flex items-center gap-1 ${hasLiked ? 'text-accent' : ''}`}>
+                        <span className={`flex items-center gap-1 ${hasLiked ? 'text-error' : ''}`}>
                           <Heart size={14} fill={hasLiked ? 'currentColor' : 'none'} /> {totalLikes}
                         </span>
                         <span className="flex items-center gap-1">
@@ -316,7 +338,7 @@ const EventDetails = () => {
                         </span>
                       </div>
                       
-                      <span className="text-[10px] text-text-secondary truncate max-w-[100px]">
+                      <span className="text-[10px] text-white/60 truncate max-w-[100px]">
                         By {media.uploadedBy?.name}
                       </span>
                     </div>
@@ -326,8 +348,10 @@ const EventDetails = () => {
             })}
           </div>
         ) : (
-          <div className="text-center py-20 glass-card">
-            <p className="text-sm text-text-secondary">No photos or videos found in this album.</p>
+          <div className="text-center py-20 glass-card flex flex-col items-center">
+            <ImageIcon size={48} className="text-text-muted mb-4" />
+            <p className="text-sm text-text-secondary font-medium">No photos or videos found in this album.</p>
+            <p className="text-xs text-text-muted mt-1">Upload some media or adjust your filters.</p>
           </div>
         )}
       </div>
@@ -339,19 +363,20 @@ const EventDetails = () => {
         title="Invite Photographer"
       >
         {inviteError && (
-          <div className="mb-4 p-3 rounded bg-error/10 border border-error/20 text-error text-xs font-bold text-center">
+          <div className="mb-4 p-3 rounded-md bg-error-muted border border-error/15 text-error text-xs font-bold text-center">
             {inviteError}
           </div>
         )}
         {inviteSuccess && (
-          <div className="mb-4 p-3 rounded bg-success/10 border border-success/20 text-success text-xs font-bold text-center">
+          <div className="mb-4 p-3 rounded-md bg-success-muted border border-success/15 text-success text-xs font-bold text-center">
             {inviteSuccess}
           </div>
         )}
         <form onSubmit={handleInvitePhotographer}>
           <div className="form-group">
-            <label>Photographer Email</label>
+            <label htmlFor="invite-email">Photographer Email</label>
             <input 
+              id="invite-email"
               type="email" 
               className="form-control"
               placeholder="photographer@studio.com"
@@ -359,17 +384,24 @@ const EventDetails = () => {
               onChange={(e) => setPhotographerEmail(e.target.value)}
               required
             />
-            <span className="text-[11px] text-text-muted mt-2 block">
+            <span className="text-[11px] text-text-muted mt-1 block">
               The photographer must already have registered an account on the platform with the Photographer role.
             </span>
           </div>
 
           <button 
             type="submit" 
-            className="btn btn-primary w-full mt-4"
+            className="btn btn-primary w-full mt-2"
             disabled={inviting}
           >
-            {inviting ? 'Inviting...' : 'Send Invitation'}
+            {inviting ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Inviting...
+              </>
+            ) : (
+              'Send Invitation'
+            )}
           </button>
         </form>
       </Modal>

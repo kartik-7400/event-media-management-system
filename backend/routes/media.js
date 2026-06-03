@@ -119,7 +119,7 @@ router.post('/confirm-upload', protect, async (req, res) => {
     let matchedUserIds = [];
     let previewKey = key; // default: original key
     let previewUrl = IS_MOCK 
-      ? `http://localhost:5001/api/media/mock-files/${key}`
+      ? `/api/media/mock-files/${key}`
       : `https://${BUCKET_NAME}.s3.amazonaws.com/${key}`;
 
     // 2. Perform AI operations if image
@@ -161,7 +161,7 @@ router.post('/confirm-upload', protect, async (req, res) => {
         const dir = path.dirname(previewFilePath);
         if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
         fs.writeFileSync(previewFilePath, previewBuffer);
-        previewUrl = `http://localhost:5001/api/media/mock-files/${previewKey}`;
+        previewUrl = `/api/media/mock-files/${previewKey}`;
       } else {
         // Upload preview buffer to S3
         const putCommand = new PutObjectCommand({

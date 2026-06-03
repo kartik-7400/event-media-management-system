@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { Loader2 } from 'lucide-react';
 
 const Login = () => {
   const { login } = useAuth();
@@ -35,21 +36,22 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-100px)] flex justify-center items-center px-6">
-      <div className="w-full max-w-[450px] glass-card p-10 animate-fade-in-up">
-        <h2 className="text-3xl font-extrabold font-heading text-center mb-2">Welcome Back</h2>
+    <div className="min-h-[calc(100vh-60px)] flex justify-center items-center px-6">
+      <div className="w-full max-w-[440px] glass-card animate-fade-in-up">
+        <h2 className="text-2xl font-extrabold text-center mb-1" style={{ letterSpacing: '-0.02em' }}>Welcome Back</h2>
         <p className="text-sm text-text-secondary text-center mb-8">Access your event-driven media library</p>
 
         {error && (
-          <div className="mb-5 p-3.5 rounded bg-error/10 border border-error/20 text-error text-sm font-semibold text-center">
+          <div className="mb-5 p-3 rounded-md bg-error-muted border border-error/15 text-error text-sm font-semibold text-center">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Email Address</label>
+            <label htmlFor="login-email">Email Address</label>
             <input 
+              id="login-email"
               type="email" 
               className="form-control" 
               placeholder="name@club.com"
@@ -60,8 +62,9 @@ const Login = () => {
           </div>
 
           <div className="form-group">
-            <label>Password</label>
+            <label htmlFor="login-password">Password</label>
             <input 
+              id="login-password"
               type="password" 
               className="form-control" 
               placeholder="••••••••"
@@ -73,10 +76,17 @@ const Login = () => {
 
           <button 
             type="submit" 
-            className="btn btn-primary w-full mt-4 py-3.5"
+            className="btn btn-primary w-full mt-2 py-3"
             disabled={submitting}
           >
-            {submitting ? 'Signing In...' : 'Sign In'}
+            {submitting ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Signing In...
+              </>
+            ) : (
+              'Sign In'
+            )}
           </button>
         </form>
 

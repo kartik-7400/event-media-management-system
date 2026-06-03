@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Bell, LogOut, User as UserIcon, Heart, Image as ImageIcon, LayoutDashboard } from 'lucide-react';
+import { Bell, LogOut, User as UserIcon, Heart, Image as ImageIcon, LayoutDashboard, Camera } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 
@@ -35,64 +35,74 @@ const Navbar = ({ onPreviewMedia }) => {
 
   if (!user) return null;
 
+  const navLinkBase = "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200";
+  const navLinkInactive = `${navLinkBase} text-text-secondary hover:text-text-primary hover:bg-white/[0.04]`;
+  const navLinkActive = `${navLinkBase} text-white bg-primary/12 border border-primary/20`;
+
   return (
-    <nav className="flex flex-col md:flex-row justify-between items-center px-8 py-3 bg-bg-secondary/85 border border-white/6 rounded-md m-4 md:m-6 backdrop-blur-md gap-4 z-50">
+    <nav className="flex flex-col md:flex-row justify-between items-center px-6 py-3 bg-bg-secondary border-b border-border-color z-50">
+      {/* Logo */}
       <div className="flex items-center">
-        <Link to="/dashboard" className="flex items-center gap-2.5 font-extrabold text-xl">
-          <span className="text-2xl drop-shadow-[0_0_8px_var(--color-primary)]">📸</span>
-          <span className="gradient-text font-heading tracking-tight">EventMediaHub</span>
+        <Link to="/dashboard" className="flex items-center gap-2.5 font-extrabold text-lg">
+          <div className="w-8 h-8 rounded-md bg-primary/12 border border-primary/20 flex items-center justify-center text-primary">
+            <Camera size={18} />
+          </div>
+          <span className="gradient-text tracking-tight">EventMediaHub</span>
         </Link>
       </div>
 
-      <div className="flex items-center gap-2">
+      {/* Navigation Links */}
+      <div className="flex items-center gap-1">
         <Link 
           to="/dashboard" 
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-sm text-text-secondary text-sm font-semibold hover:text-text-primary hover:bg-white/3 transition-all duration-200 ${isActive('/dashboard') ? 'text-white bg-primary/15 border border-primary/25' : ''}`}
+          className={isActive('/dashboard') ? navLinkActive : navLinkInactive}
         >
-          <LayoutDashboard size={18} />
+          <LayoutDashboard size={16} />
           <span>Dashboard</span>
         </Link>
 
         {user.role === 'Club Member' && (
           <Link 
             to="/matched" 
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-sm text-text-secondary text-sm font-semibold hover:text-text-primary hover:bg-white/3 transition-all duration-200 ${isActive('/matched') ? 'text-white bg-primary/15 border border-primary/25' : ''}`}
+            className={isActive('/matched') ? navLinkActive : navLinkInactive}
           >
-            <ImageIcon size={18} />
+            <ImageIcon size={16} />
             <span>My Photos</span>
           </Link>
         )}
 
         <Link 
           to="/favourites" 
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-sm text-text-secondary text-sm font-semibold hover:text-text-primary hover:bg-white/3 transition-all duration-200 ${isActive('/favourites') ? 'text-white bg-primary/15 border border-primary/25' : ''}`}
+          className={isActive('/favourites') ? navLinkActive : navLinkInactive}
         >
-          <Heart size={18} />
+          <Heart size={16} />
           <span>Favourites</span>
         </Link>
       </div>
 
-      <div className="flex items-center gap-4 w-full md:w-auto justify-around md:justify-end">
-        {/* Real-time Notifications Bell */}
+      {/* Right Side — Notifications, Profile, Logout */}
+      <div className="flex items-center gap-3 w-full md:w-auto justify-around md:justify-end">
+        {/* Notification Bell */}
         <div className="relative">
           <button 
-            className={`relative bg-white/3 border border-white/6 text-text-secondary w-10 h-10 rounded-full flex items-center justify-center cursor-pointer hover:bg-white/8 hover:text-text-primary hover:-translate-y-0.5 transition-all duration-200 ${unreadCount > 0 ? 'animate-bounce' : ''}`} 
+            className="relative w-9 h-9 rounded-full flex items-center justify-center cursor-pointer text-text-secondary border border-border-color bg-transparent hover:bg-white/[0.04] hover:text-text-primary hover:border-border-hover transition-all duration-200" 
             onClick={() => setShowNotifications(!showNotifications)}
+            aria-label="Notifications"
           >
-            <Bell size={20} />
+            <Bell size={18} />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-accent text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center border-2 border-bg-secondary shadow-[0_0_10px_rgba(217,70,239,0.5)]">
+              <span className="absolute -top-1 -right-1 bg-error text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center border-2 border-bg-secondary">
                 {unreadCount}
               </span>
             )}
           </button>
 
           {showNotifications && (
-            <div className="absolute top-[50px] right-0 w-[320px] max-h-[400px] bg-bg-secondary border border-white/8 rounded-md z-100 overflow-hidden shadow-2xl">
-              <div className="flex justify-between items-center p-4 border-b border-white/5">
+            <div className="absolute top-[48px] right-0 w-[320px] max-h-[400px] bg-bg-secondary border border-border-color rounded-md z-[100] overflow-hidden shadow-2xl animate-slide-up">
+              <div className="flex justify-between items-center px-4 py-3 border-b border-border-color">
                 <h5 className="text-sm font-bold text-text-primary">Notifications</h5>
                 {unreadCount > 0 && (
-                  <button onClick={markAllAsRead} className="bg-transparent border-none color-primary text-xs font-semibold cursor-pointer hover:text-accent hover:underline transition-all duration-200">
+                  <button onClick={markAllAsRead} className="bg-transparent border-none text-primary text-xs font-semibold cursor-pointer hover:underline transition-all duration-200">
                     Mark all read
                   </button>
                 )}
@@ -103,43 +113,44 @@ const Navbar = ({ onPreviewMedia }) => {
                   notifications.map((notif) => (
                     <div 
                       key={notif._id} 
-                      className={`p-3 border-b border-white/3 cursor-pointer hover:bg-white/3 transition-all duration-200 ${!notif.isRead ? 'bg-primary/5 border-l-[3px] border-primary' : ''}`}
+                      className={`px-4 py-3 border-b border-border-color cursor-pointer hover:bg-white/[0.02] transition-all duration-200 ${!notif.isRead ? 'bg-primary-muted border-l-[3px] border-l-primary' : ''}`}
                       onClick={() => handleNotificationClick(notif)}
                     >
-                      <p className="text-[12px] text-text-primary leading-normal mb-1">{notif.message}</p>
-                      <span className="text-[10px] text-text-muted">{new Date(notif.createdAt).toLocaleTimeString()}</span>
+                      <p className="text-[13px] text-text-primary leading-normal mb-1">{notif.message}</p>
+                      <span className="text-[11px] text-text-muted">{new Date(notif.createdAt).toLocaleTimeString()}</span>
                     </div>
                   ))
                 ) : (
-                  <div className="p-6 text-center text-text-muted text-xs">No notifications.</div>
+                  <div className="px-6 py-8 text-center text-text-muted text-xs">No notifications yet.</div>
                 )}
               </div>
             </div>
           )}
         </div>
 
-        {/* User Profile Summary */}
-        <Link to="/profile" className="flex items-center gap-2.5 cursor-pointer p-1.5 px-3 rounded-full bg-white/2 border border-white/4 hover:bg-white/5 hover:border-white/8 transition-all duration-200">
+        {/* User Profile Chip */}
+        <Link to="/profile" className="flex items-center gap-2.5 cursor-pointer py-1.5 px-3 rounded-full border border-border-color hover:bg-white/[0.04] hover:border-border-hover transition-all duration-200">
           {user.profilePicture ? (
-            <img src={user.profilePicture} alt="selfie" className="w-7 h-7 rounded-full object-cover border-[1.5px] border-primary" />
+            <img src={user.profilePicture} alt="Profile" className="w-7 h-7 rounded-full object-cover border-[1.5px] border-primary" />
           ) : (
-            <div className="w-7 h-7 rounded-full bg-bg-tertiary flex items-center justify-center text-text-secondary border border-white/10">
+            <div className="w-7 h-7 rounded-full bg-bg-tertiary flex items-center justify-center text-text-muted border border-border-color">
               <UserIcon size={14} />
             </div>
           )}
           <div className="flex flex-col text-left">
-            <span className="text-xs font-semibold text-text-primary">{user.name}</span>
-            <span className="text-[9px] text-primary font-bold uppercase tracking-wider">{user.role}</span>
+            <span className="text-xs font-semibold text-text-primary leading-tight">{user.name}</span>
+            <span className="text-[10px] text-primary font-bold uppercase tracking-wider">{user.role}</span>
           </div>
         </Link>
 
-        {/* Logout Button */}
+        {/* Logout */}
         <button 
-          className="relative bg-white/3 border border-white/6 text-text-secondary w-10 h-10 rounded-full flex items-center justify-center cursor-pointer hover:-translate-y-0.5 hover:bg-error/10 hover:border-error/20 hover:text-error transition-all duration-200" 
+          className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer text-text-secondary border border-border-color bg-transparent hover:bg-error-muted hover:border-error/20 hover:text-error transition-all duration-200" 
           onClick={handleLogout} 
           title="Log Out"
+          aria-label="Log Out"
         >
-          <LogOut size={20} />
+          <LogOut size={18} />
         </button>
       </div>
     </nav>

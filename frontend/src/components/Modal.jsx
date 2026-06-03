@@ -1,29 +1,32 @@
 import React from 'react';
+import { X } from 'lucide-react';
 
 const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
 
   return (
     <div 
-      className="fixed inset-0 bg-bg-primary/85 backdrop-blur-sm flex justify-center items-center z-[1000] p-5"
+      className="fixed inset-0 bg-bg-primary/90 backdrop-blur-sm flex justify-center items-center z-[1000] p-6"
       onClick={onClose}
     >
       <div 
-        className="w-full max-w-[500px] bg-bg-secondary border border-border-color rounded-md p-7 shadow-2xl animate-fade-in-up"
+        className="w-full max-w-[520px] bg-bg-secondary border border-border-color rounded-md overflow-hidden shadow-2xl animate-fade-in-up"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center mb-5 border-b border-white/5 pb-3">
-          <h2 className="text-xl font-bold font-heading text-text-primary bg-gradient-to-r from-slate-50 to-slate-300 bg-clip-text text-transparent">
-            {title}
-          </h2>
+        {/* Header */}
+        <div className="flex justify-between items-center px-6 py-4 border-b border-border-color">
+          <h2 className="text-lg font-bold text-text-primary">{title}</h2>
           <button 
-            className="bg-transparent border-none text-text-secondary text-2xl cursor-pointer leading-none hover:text-error hover:rotate-90 transition-all duration-200" 
+            className="w-8 h-8 rounded-full flex items-center justify-center text-text-muted bg-transparent border border-transparent cursor-pointer hover:bg-white/[0.06] hover:text-text-primary hover:border-border-color transition-all duration-200" 
             onClick={onClose}
+            aria-label="Close"
           >
-            &times;
+            <X size={18} />
           </button>
         </div>
-        <div className="mt-2.5">
+
+        {/* Body */}
+        <div className="px-6 py-5">
           {children}
         </div>
       </div>

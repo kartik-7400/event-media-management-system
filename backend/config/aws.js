@@ -11,7 +11,11 @@ const isAwsConfigured = !!(
   process.env.AWS_S3_BUCKET_NAME
 );
 
-export const IS_MOCK = !isAwsConfigured;
+export let IS_MOCK = !isAwsConfigured || process.env.AWS_MOCK === 'true';
+
+export function setMockMode(val) {
+  IS_MOCK = val;
+}
 
 if (IS_MOCK) {
   console.warn('⚠️ AWS credentials or S3 bucket configuration missing. Running in AWS MOCK mode.');
