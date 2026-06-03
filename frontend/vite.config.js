@@ -8,14 +8,14 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'https://wilder-deacon-decency.ngrok-free.dev',
+        target: process.env.VITE_BACKEND_URL || 'http://localhost:3000',
         changeOrigin: true,
         headers: {
           'ngrok-skip-browser-warning': 'true',
         },
       },
       '/socket.io': {
-        target: 'https://wilder-deacon-decency.ngrok-free.dev',
+        target: process.env.VITE_BACKEND_URL || 'http://localhost:3000',
         ws: true,
         changeOrigin: true,
         headers: {

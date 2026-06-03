@@ -1,16 +1,16 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { JWT_SECRET } from '../config/env.js';
 
 // Protect routes middleware
 export const protect = async (req, res, next) => {
   let token;
-  const secret = process.env.JWT_SECRET || 'fallback-super-secret-jwt-key';
 
   // Read token from Authorization header (Format: Bearer <token>)
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     try {
       token = req.headers.authorization.split(' ')[1];
-      const decoded = jwt.verify(token, secret);
+      const decoded = jwt.verify(token, JWT_SECRET);
 
       // Attach user to req object without the password
       req.user = await User.findById(decoded.id).select('-password');

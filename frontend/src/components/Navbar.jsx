@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Bell, LogOut, User as UserIcon, Heart, Image as ImageIcon, LayoutDashboard, Camera } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -10,6 +10,18 @@ const Navbar = ({ onPreviewMedia }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const notificationRef = useRef(null);
+
+  // Close notifications on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (notificationRef.current && !notificationRef.current.contains(e.target)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -83,7 +95,7 @@ const Navbar = ({ onPreviewMedia }) => {
       {/* Right Side — Notifications, Profile, Logout */}
       <div className="flex items-center gap-3 w-full md:w-auto justify-around md:justify-end">
         {/* Notification Bell */}
-        <div className="relative">
+        <div ref={notificationRef} className="relative">
           <button 
             className="relative w-9 h-9 rounded-full flex items-center justify-center cursor-pointer text-text-secondary border border-border-color bg-transparent hover:bg-white/[0.04] hover:text-text-primary hover:border-border-hover transition-all duration-200" 
             onClick={() => setShowNotifications(!showNotifications)}

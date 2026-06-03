@@ -1,9 +1,10 @@
-import './config/env.js';
+import { PORT, NODE_ENV } from './config/env.js';
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import connectDB from './config/db.js';
+import { initializeAwsCollection } from './utils/awsHelper.js';
 
 // Route imports
 import authRoutes from './routes/auth.js';
@@ -63,8 +64,11 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 5001;
-
-server.listen(PORT, () => {
-  console.log(`🚀 Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+server.listen(PORT, async () => {
+  console.log(`🚀 Server running in ${NODE_ENV} mode on port ${PORT}`);
+  try {
+    await initializeAwsCollection();
+  } catch (err) {
+    console.error('Failed to initialize AWS Rekognition collection:', err);
+  }
 });

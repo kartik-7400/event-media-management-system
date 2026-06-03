@@ -12,38 +12,46 @@ export { s3Client, rekognitionClient, BUCKET_NAME, REKOGNITION_COLLECTION_ID, IS
 import fs from 'fs';
 import path from 'path';
 
-// Self-initializing Rekognition Collection if AWS is active
-if (!IS_MOCK) {
-  (async () => {
-    try {
-      await rekognitionClient.send(new DescribeCollectionCommand({ CollectionId: REKOGNITION_COLLECTION_ID }));
-      console.log(`AWS Rekognition: Face collection '${REKOGNITION_COLLECTION_ID}' exists.`);
-    } catch (err) {
-      if (err.name === 'ResourceNotFoundException') {
-        try {
-          await rekognitionClient.send(new CreateCollectionCommand({ CollectionId: REKOGNITION_COLLECTION_ID }));
-          console.log(`AWS Rekognition: Created Face Collection '${REKOGNITION_COLLECTION_ID}'.`);
-        } catch (createErr) {
-          console.error('AWS Rekognition: Failed to create Face Collection', createErr);
-        }
-      } else {
-        console.error('AWS Rekognition: Error checking Face Collection', err);
-        if (
-          err.code === 'ENOTFOUND' ||
-          err.code === 'EAI_AGAIN' ||
-          err.name === 'TimeoutError' ||
-          err.name === 'ConnectTimeoutError' ||
-          err.message?.includes('getaddrinfo') ||
-          err.message?.includes('ENOTFOUND') ||
-          err.message?.includes('fetch failed')
-        ) {
-          console.warn('⚠️ AWS services are unreachable. Automatically falling back to simulated AWS MOCK mode.');
-          setMockMode(true);
-        }
+// Helper to check network connectivity issues
+const isNetworkError = (err) => {
+  return (
+    err.code === 'ENOTFOUND' ||
+    err.code === 'EAI_AGAIN' ||
+    err.name === 'TimeoutError' ||
+    err.name === 'ConnectTimeoutError' ||
+    err.message?.includes('getaddrinfo') ||
+    err.message?.includes('ENOTFOUND') ||
+    err.message?.includes('fetch failed')
+  );
+};
+
+/**
+ * Checks if the Rekognition Face Collection exists, and creates it if not.
+ * If AWS services are unreachable, automatically falls back to mock mode.
+ */
+export const initializeAwsCollection = async () => {
+  if (IS_MOCK) return;
+
+  try {
+    await rekognitionClient.send(new DescribeCollectionCommand({ CollectionId: REKOGNITION_COLLECTION_ID }));
+    console.log(`AWS Rekognition: Face collection '${REKOGNITION_COLLECTION_ID}' exists.`);
+  } catch (err) {
+    if (err.name === 'ResourceNotFoundException') {
+      try {
+        await rekognitionClient.send(new CreateCollectionCommand({ CollectionId: REKOGNITION_COLLECTION_ID }));
+        console.log(`AWS Rekognition: Created Face Collection '${REKOGNITION_COLLECTION_ID}'.`);
+      } catch (createErr) {
+        console.error('AWS Rekognition: Failed to create Face Collection', createErr);
+      }
+    } else {
+      console.error('AWS Rekognition: Error checking Face Collection', err);
+      if (isNetworkError(err)) {
+        console.warn('⚠️ AWS services are unreachable. Automatically falling back to simulated AWS MOCK mode.');
+        setMockMode(true);
       }
     }
-  })();
-}
+  }
+};
 
 // Ensure mock uploads directory exists
 const UPLOADS_DIR = path.resolve('uploads');

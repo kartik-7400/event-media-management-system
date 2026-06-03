@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
+import { MONGODB_URI } from './env.js';
 
 const connectDB = async () => {
   try {
-    const connStr = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/event-media-hub';
-    const conn = await mongoose.connect(connStr);
+    const conn = await mongoose.connect(MONGODB_URI);
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`MongoDB Connection Error: ${error.message}`);

@@ -108,7 +108,7 @@ router.get('/', protect, async (req, res) => {
 // @access  Private
 router.get('/:id', protect, async (req, res) => {
   try {
-    const event = await Event.findById(req.id || req.params.id)
+    const event = await Event.findById(req.params.id)
       .populate('createdBy', 'name email clubName')
       .populate('invitedPhotographers', 'name email')
       .populate('attendees', 'name email faceId profilePicture');

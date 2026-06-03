@@ -6,12 +6,12 @@ import { GetObjectCommand } from '@aws-sdk/client-s3';
 import User from '../models/User.js';
 import { protect } from '../middleware/auth.js';
 import { getUploadPresignedUrl, indexFaceSelfie, IS_MOCK, s3Client, BUCKET_NAME } from '../utils/awsHelper.js';
+import { JWT_SECRET } from '../config/env.js';
 
 const router = express.Router();
 // Helper to sign JWT
 const generateToken = (id) => {
-  const secret = process.env.JWT_SECRET || 'fallback-super-secret-jwt-key';
-  return jwt.sign({ id }, secret, { expiresIn: '30d' });
+  return jwt.sign({ id }, JWT_SECRET, { expiresIn: '30d' });
 };
 
 // @desc    Register a new user
