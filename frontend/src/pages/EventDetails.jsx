@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Calendar, MapPin, Camera, UserPlus, Filter, Image as ImageIcon, Heart, MessageSquare, Sparkles, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config';
 import FileDropzone from '../components/FileDropzone';
 import Lightbox from '../components/Lightbox';
 import Modal from '../components/Modal';
@@ -29,7 +30,7 @@ const EventDetails = () => {
   const fetchEventDetails = async () => {
     if (!token) return;
     try {
-      const res = await fetch(`/api/events/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/events/${id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await res.json();
@@ -44,7 +45,7 @@ const EventDetails = () => {
   const fetchEventMedia = async () => {
     if (!token) return;
     try {
-      const res = await fetch(`/api/media/event/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/media/event/${id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await res.json();
@@ -84,7 +85,7 @@ const EventDetails = () => {
     setInviting(true);
 
     try {
-      const res = await fetch(`/api/events/${id}/invite-photographer`, {
+      const res = await fetch(`${API_BASE_URL}/api/events/${id}/invite-photographer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

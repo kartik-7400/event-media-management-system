@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Star, Image as ImageIcon, Heart, MessageSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config';
 import Lightbox from '../components/Lightbox';
 
 const Favourites = () => {
@@ -13,7 +14,7 @@ const Favourites = () => {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/media/favourites/list', {
+      const res = await fetch(`${API_BASE_URL}/api/media/favourites/list`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await res.json();

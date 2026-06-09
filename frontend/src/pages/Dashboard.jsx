@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Calendar, MapPin, Plus, Search, SlidersHorizontal, Check, Loader2, FolderOpen } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config';
 import Modal from '../components/Modal';
 import Dropdown from '../components/Dropdown';
 import DatePicker from '../components/DatePicker';
@@ -34,7 +35,7 @@ const Dashboard = () => {
     if (!token) return;
     setLoading(true);
     try {
-      let url = `/api/events?sort=${sortBy}&order=${sortOrder}`;
+      let url = `${API_BASE_URL}/api/events?sort=${sortBy}&order=${sortOrder}`;
       if (categoryFilter) url += `&category=${categoryFilter}`;
       if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
 
@@ -69,7 +70,7 @@ const Dashboard = () => {
     setFormSubmitting(true);
 
     try {
-      const res = await fetch('/api/events', {
+      const res = await fetch(`${API_BASE_URL}/api/events`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -102,7 +103,7 @@ const Dashboard = () => {
 
   const handleRSVP = async (eventId, index) => {
     try {
-      const res = await fetch(`/api/events/${eventId}/rsvp`, {
+      const res = await fetch(`${API_BASE_URL}/api/events/${eventId}/rsvp`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Upload, X, CheckCircle, AlertCircle, Film, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config';
 
 const FileDropzone = ({ eventId, onUploadSuccess }) => {
   const { token } = useAuth();
@@ -76,7 +77,7 @@ const FileDropzone = ({ eventId, onUploadSuccess }) => {
         setStatus(prev => ({ ...prev, [fileId]: 'uploading' }));
         setProgress(prev => ({ ...prev, [fileId]: 0 }));
 
-        const response = await fetch('/api/media/request-upload', {
+        const response = await fetch(`${API_BASE_URL}/api/media/request-upload`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -116,7 +117,7 @@ const FileDropzone = ({ eventId, onUploadSuccess }) => {
             try {
               setStatus(prev => ({ ...prev, [fileId]: 'processing' }));
               
-              const confirmResponse = await fetch('/api/media/confirm-upload', {
+              const confirmResponse = await fetch(`${API_BASE_URL}/api/media/confirm-upload`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',

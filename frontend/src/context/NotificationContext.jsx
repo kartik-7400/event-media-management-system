@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import io from 'socket.io-client';
 import { useAuth } from './AuthContext';
+import { API_BASE_URL } from '../config';
 
 const NotificationContext = createContext(null);
 
@@ -15,7 +16,7 @@ export const NotificationProvider = ({ children }) => {
   const fetchNotifications = async () => {
     if (!token) return;
     try {
-      const response = await fetch('/api/notifications', {
+      const response = await fetch(`${API_BASE_URL}/api/notifications`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await response.json();
@@ -40,8 +41,8 @@ export const NotificationProvider = ({ children }) => {
       return;
     }
 
-    // Connect socket relative to current origin (Vite will proxy /socket.io to backend)
-    const newSocket = io();
+    // Connect socket to backend (Vite proxy fallback in dev, absolute URL in prod)
+    const newSocket = io(API_BASE_URL);
     setSocket(newSocket);
 
     newSocket.on('connect', () => {
@@ -76,7 +77,7 @@ export const NotificationProvider = ({ children }) => {
   const markAsRead = async (id) => {
     if (!token) return;
     try {
-      const response = await fetch(`/api/notifications/${id}/read`, {
+      const response = await fetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -95,7 +96,7 @@ export const NotificationProvider = ({ children }) => {
   const markAllAsRead = async () => {
     if (!token) return;
     try {
-      const response = await fetch('/api/notifications/read-all', {
+      const response = await fetch(`${API_BASE_URL}/api/notifications/read-all`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });

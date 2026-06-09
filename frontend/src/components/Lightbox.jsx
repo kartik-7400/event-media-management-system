@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Heart, Send, Download, X, User as UserIcon, Star } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config';
 
 const Lightbox = ({ mediaId, onClose, onActionSuccess }) => {
   const { user, token } = useAuth();
@@ -19,7 +20,7 @@ const Lightbox = ({ mediaId, onClose, onActionSuccess }) => {
     const fetchDetails = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/media/${mediaId}`, {
+        const res = await fetch(`${API_BASE_URL}/api/media/${mediaId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const result = await res.json();
@@ -40,7 +41,7 @@ const Lightbox = ({ mediaId, onClose, onActionSuccess }) => {
 
   const handleLike = async () => {
     try {
-      const res = await fetch(`/api/media/${mediaId}/like`, {
+      const res = await fetch(`${API_BASE_URL}/api/media/${mediaId}/like`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -62,7 +63,7 @@ const Lightbox = ({ mediaId, onClose, onActionSuccess }) => {
 
   const handleFavourite = async () => {
     try {
-      const res = await fetch(`/api/media/${mediaId}/favourite`, {
+      const res = await fetch(`${API_BASE_URL}/api/media/${mediaId}/favourite`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -81,7 +82,7 @@ const Lightbox = ({ mediaId, onClose, onActionSuccess }) => {
     if (!commentText.trim()) return;
 
     try {
-      const res = await fetch(`/api/media/${mediaId}/comment`, {
+      const res = await fetch(`${API_BASE_URL}/api/media/${mediaId}/comment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -115,7 +116,7 @@ const Lightbox = ({ mediaId, onClose, onActionSuccess }) => {
     if (!newTagName.trim()) return;
 
     try {
-      const res = await fetch(`/api/media/${mediaId}/tag`, {
+      const res = await fetch(`${API_BASE_URL}/api/media/${mediaId}/tag`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -144,7 +145,7 @@ const Lightbox = ({ mediaId, onClose, onActionSuccess }) => {
   const handleDownload = () => {
     if (!media) return;
     const link = document.createElement('a');
-    link.href = `/api/media/${media._id}/download`;
+    link.href = `${API_BASE_URL}/api/media/${media._id}/download`;
     fetch(link.href, {
       headers: {
         'Authorization': `Bearer ${token}`

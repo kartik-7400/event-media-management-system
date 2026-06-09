@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, Heart, MessageSquare, AlertCircle, Image as ImageIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config';
 import Lightbox from '../components/Lightbox';
 
 const MatchedPhotos = () => {
@@ -13,7 +14,7 @@ const MatchedPhotos = () => {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/media/matched', {
+      const res = await fetch(`${API_BASE_URL}/api/media/matched`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await res.json();
