@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import User from '../models/User.js';
+import sharp from 'sharp';
 import { protect } from '../middleware/auth.js';
 import { getUploadPresignedUrl, indexFaceSelfie, IS_MOCK, s3Client, BUCKET_NAME } from '../utils/awsHelper.js';
 import { JWT_SECRET } from '../config/env.js';
@@ -161,8 +162,20 @@ router.post('/confirm-selfie', protect, async (req, res) => {
       imageBuffer = await streamToBuffer(s3Response.Body);
     }
 
+    // Convert to JPEG format and auto-orient using sharp to guarantee Rekognition compatibility
+    let processedBuffer = imageBuffer;
+    try {
+      processedBuffer = await sharp(imageBuffer)
+        .rotate()
+        .jpeg({ quality: 90 })
+        .toBuffer();
+    } catch (sharpErr) {
+      console.error('Error processing selfie image with sharp:', sharpErr);
+      // Fallback to original buffer if sharp fails
+    }
+
     // Index face in Rekognition face collection
-    const faceId = await indexFaceSelfie(imageBuffer, key);
+    const faceId = await indexFaceSelfie(processedBuffer, key);
 
     // Save S3 key/url and FaceId to database
     const profilePictureUrl = IS_MOCK 

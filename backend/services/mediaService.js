@@ -7,6 +7,7 @@ import User from '../models/User.js';
 import Notification from '../models/Notification.js';
 import { detectImageLabels, searchFaces, IS_MOCK, s3Client, BUCKET_NAME } from '../utils/awsHelper.js';
 import { applyWatermark } from '../utils/watermark.js';
+import sharp from 'sharp';
 
 const UPLOADS_DIR = path.resolve('uploads');
 
@@ -58,11 +59,22 @@ export const confirmAndProcessUpload = async ({ key, eventId, userId, isPublic =
   // 2. Perform AI operations if image
   const isImage = mimeType.startsWith('image/');
   if (isImage) {
+    // Normalize image format and rotation for AWS Rekognition compatibility
+    let normalizedBuffer = originalBuffer;
+    try {
+      normalizedBuffer = await sharp(originalBuffer)
+        .rotate()
+        .jpeg({ quality: 90 })
+        .toBuffer();
+    } catch (sharpErr) {
+      console.error('Sharp normalization error for event media:', sharpErr);
+    }
+
     // AI Labels detection
-    tags = await detectImageLabels(originalBuffer);
+    tags = await detectImageLabels(normalizedBuffer);
 
     // AI Facial recognition
-    const matchedFaceIds = await searchFaces(originalBuffer);
+    const matchedFaceIds = await searchFaces(normalizedBuffer);
     
     if (!IS_MOCK) {
       // Query users with matching face IDs
