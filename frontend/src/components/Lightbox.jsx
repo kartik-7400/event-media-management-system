@@ -200,11 +200,11 @@ const Lightbox = ({ mediaId, onClose, onActionSuccess }) => {
       </button>
       
       <div 
-        className="grid grid-cols-1 lg:grid-cols-[1fr_360px] w-full max-w-[1100px] h-[90vh] lg:h-[80vh] min-h-[500px] bg-bg-secondary rounded-lg overflow-hidden border border-border-color shadow-2xl animate-fade-in-up"
+        className="grid grid-cols-1 lg:grid-cols-[1fr_360px] w-full max-w-[1100px] h-[90vh] lg:h-[80vh] min-h-0 lg:min-h-[500px] bg-bg-secondary rounded-lg overflow-y-auto lg:overflow-hidden border border-border-color shadow-2xl animate-fade-in-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Media Window */}
-        <div className="flex flex-col bg-black relative justify-center items-center overflow-hidden h-full min-h-[250px] lg:min-h-0">
+        <div className="flex flex-col bg-black relative justify-center items-center overflow-hidden h-auto aspect-[4/3] lg:aspect-auto lg:h-full min-h-[250px] lg:min-h-0">
           <div 
             className="relative w-full h-full flex items-center justify-center" 
             ref={imageContainerRef}
@@ -276,7 +276,7 @@ const Lightbox = ({ mediaId, onClose, onActionSuccess }) => {
         </div>
 
         {/* Social Sidebar */}
-        <div className="flex flex-col bg-bg-secondary border-t lg:border-t-0 lg:border-l border-border-color p-6 h-full overflow-hidden">
+        <div className="flex flex-col bg-bg-secondary border-t lg:border-t-0 lg:border-l border-border-color p-6 h-auto lg:h-full lg:overflow-hidden">
           {/* Uploader Info */}
           <div className="flex items-center gap-3 mb-5 border-b border-border-color pb-4">
             <div className="w-9 h-9 rounded-full bg-bg-tertiary border border-border-color flex items-center justify-center text-text-muted">
@@ -319,7 +319,7 @@ const Lightbox = ({ mediaId, onClose, onActionSuccess }) => {
           <div className="flex flex-col flex-1 min-h-0">
             <h5 className="text-[13px] font-bold text-text-primary mb-3">Comments ({media.comments?.length || 0})</h5>
             
-            <div className="flex-grow overflow-y-auto mb-4 pr-1 flex flex-col gap-2">
+            <div className="flex-grow max-h-[260px] lg:max-h-none overflow-y-auto mb-4 pr-1 flex flex-col gap-2">
               {media.comments && media.comments.length > 0 ? (
                 media.comments.map((comment, i) => (
                   <div key={i} className="bg-bg-tertiary/50 border border-border-color p-3 rounded-md">
