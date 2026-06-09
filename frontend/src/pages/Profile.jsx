@@ -112,7 +112,7 @@ const Profile = () => {
                 <input 
                   id="profile-selfie-input"
                   type="file"
-                  accept="image/*"
+                  accept=".jpg,.jpeg,.png"
                   style={{ display: 'none' }}
                   onChange={handleSelfieChange}
                 />
